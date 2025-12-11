@@ -19,7 +19,8 @@ For local testing and debugging in a SLIME listener:
 |#
 
 #-(and bordeaux-threads hunchentoot)
-(ql:quickload '(:cl-interpol :alexandria :iterate :hunchentoot :babel
+(ql:quickload '(:cl-interpol :alexandria :iterate
+                :bordeaux-threads :hunchentoot :babel
                 :com.inuoe.jzon :cl-change-case :uiop :vom))
 
 (defpackage :kallisti
@@ -96,6 +97,17 @@ For local testing and debugging in a SLIME listener:
               (payoff-value (gethash "value" payoff)))
     payoff-value))
 
+(defparameter *state-lock* (bt:make-lock "STATE-LOCK"))
+(defparameter *current-simulation-state* nil)
+
+(defun set-state (value)
+  (bt:with-lock-held (*state-lock*)
+    (setf *current-simulation-state* value)))
+
+(defun get-state ()
+  (bt:with-lock-held (*state-lock*)
+    *current-simulation-state*))
+
 (defun error-response (code msg &optional (request-id 'null))
   (setf (ht:return-code*) code)
   (setf (ht:header-out "Content-Type") "application/json")
@@ -151,6 +163,12 @@ For local testing and debugging in a SLIME listener:
     (setf (node-actions node) nil)
     (setf (node-utilities node) (list payoff))
     (learn-centipede node))
+  nil)
+
+(define-json-handler state-update (data 204 nil)
+  ;; TODO just a stub for now
+  (set-state data)
+  (v:info "state: ~S" (get-state))
   nil)
 
 (defvar *server* nil)
