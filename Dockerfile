@@ -1,4 +1,4 @@
-# Dockerfile for the JSON HTTP server for the Kallisti project's interaction between IHMC's and CMU's code
+# Dockerfile for the JSON HTTP server for a- project-whose-name-must-not-be-uttered's interaction between IHMC's and CMU's code
 
 FROM ubuntu:22.04
 WORKDIR /usr/src/app

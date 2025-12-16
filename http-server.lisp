@@ -10,12 +10,12 @@
 #|
 For local testing and debugging in a SLIME listener
 (progn
-  (swank:set-default-directory "/Users/dfm/work/kallisti/kallisti-actr")
+  (swank:set-default-directory "/Users/dfm/work/bha/bha-actr")
   (load "act-up-v1_3_3")
   (load "IBL")
   (load "http-server")
-  (swank:set-package "KALLISTI")
-  (funcall (find-symbol "START-SERVER" (find-package "KALLISTI")) :debug nil))
+  (swank:set-package "BHA")
+  (funcall (find-symbol "START-SERVER" (find-package "BHA")) :debug nil))
 |#
 
 #-(and bordeaux-threads hunchentoot)
@@ -23,21 +23,20 @@ For local testing and debugging in a SLIME listener
                 :bordeaux-threads :hunchentoot :babel
                 :com.inuoe.jzon :cl-change-case :uiop :vom))
 
-(defpackage :kallisti
-  (:nicknames :kal)
+(defpackage :bha
   (:use :common-lisp :alexandria :iterate)
   (:local-nicknames (:ht :hunchentoot) (:b babel) (:jzon :com.inuoe.jzon) (:v :vom))
   (:import-from :cl-user #:run-ibl #:init-model #:run #:hide
                          #:state #:opponent #:action #:reaction #:status #:delta)
   (:export #:start-server #:stop-server #:run-standalone))
 
-(in-package :kallisti)
+(in-package :bha)
 
 (interpol:enable-interpol-syntax :modify-*readtable* t)
 
 (defparameter *port* 9899)
 (defparameter *debug* nil)
-(defparameter *access-log* "kallisti-actr-access.log")
+(defparameter *access-log* "bha-actr-access.log")
 
 (defun alistify-jzon (jzon)
   (etypecase jzon
@@ -146,7 +145,6 @@ For local testing and debugging in a SLIME listener
           (for n := (car (rassoc m +action-name-map+ :test #'equalp)))
           (for id := (gethash n *action-map*))
           (collect (alist-hash-table `(("action_id" . ,id) ("probability" . ,p))) :into probs)
-          (:_ probs)
           (finally (return (jzon:stringify (coerce probs 'vector)))))))
 
 (define-json-handler jag-status (json 204 nil)
@@ -176,7 +174,7 @@ For local testing and debugging in a SLIME listener
         ((not (realp debug)) (setf *debug* t))
         (t (setf debug (clamp (round debug) 0 4))
            (setf *debug* (if (zerop debug) t debug))))
-  (v:config :kal (cond ((null *debug*) :info)
+  (v:config :bha (cond ((null *debug*) :info)
                        ((integerp *debug*) (make-keyword #?"DEBUG${*debug*}"))
                        (t :debug))))
 

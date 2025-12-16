@@ -1,8 +1,8 @@
-# Lisp JSON over HTTP server for Project Kallisti
+# Lisp JSON over HTTP server for a project whose name must not be uttered
 
 This is a simple HTTP server implemented in Common Lisp that takes JSON requests using the POST method
 to send a single JSON value, calls a Lisp function on the Lisp version of that value, converts the
-return value of that function to JSON and returns it to the caller. It was created for use in the DARPA Project Kallisti,
+return value of that function to JSON and returns it to the caller. It was created for use in the project who name must not be uttered.
 but likely will have use in other projects, too. Various choices made here are simply best guesses for
 what we want, and will undoubtedly evolve as we negotiate the needs of our caller(s). When using this
 for other projects it will probably be best to fork it and modify it to taste for those other projects.
@@ -19,7 +19,7 @@ implementations with networking support, such as [LispWorks](https://www.lispwor
 
 * Cone this repo, and `cd` into it.
 
-* Start it by running `./rrun.sh`
+* Start it by running `./run.sh`
 
 * Test that it is working by running, in a different shell, `curl -d @sample-input.json http://localhost/decision`
 which makes an HTTP request to the server sending the contents of the file `sample-input.json` as POST data.
@@ -35,7 +35,7 @@ which makes an HTTP request to the server sending the contents of the file `samp
 
 If you don't want to install SBCL and so on on a local machine it is also possible to build and run a Docker container, defined by the Dockerfile in the repo. For example,
 
-    (dfm) dfm@carlisle:~/work/kallisti/json-http$ docker build -t json-http .
+    (dfm) dfm@carlisle:~/work/bha/json-http$ docker build -t json-http .
     [+] Building 42.3s (21/21) FINISHED                                                                      docker:default
     ... [lots of Docker spew elided here] ...
      => exporting to image                                                                                             0.3s
@@ -45,7 +45,7 @@ If you don't want to install SBCL and so on on a local machine it is also possib
 
 Then run
 
-    (dfm) dfm@carlisle:~/work/kallisti/json-http$ sudo docker run -p 9899:9899 json-http
+    (dfm) dfm@carlisle:~/work/bha/json-http$ sudo docker run -p 9899:9899 json-http
     This is SBCL 2.5.3, an implementation of ANSI Common Lisp.
     More information about SBCL is available at <http://www.sbcl.org/>.
 
@@ -58,9 +58,14 @@ Then run
 
 And in a different shell,
 
-    (dfm) dfm@carlisle:~/work/kallisti/json-http$ curl -d @sample-input.json http://localhost:9899/decision
+    (dfm) dfm@carlisle:~/work/bha/json-http$ curl -d @sample-input.json http://localhost:9899/decision
     {"actions":[{"action_id":"d44cc237-9e09-4cb9-97aa-6f32831df844","probability":1.0},{"action_id":"bf93c4cc-6063-458e-afa4-b024f5c9abb6","probability":0.0}]}
 
+
+## NOTE THAT EVERYTHING BELOW THIS POINT IT LIKELY OUT OF DATE
+
+Like the woodsman too busy chopping down trees to stop and sharpen their axe, we can fix this right now 'causes we're running too fast against a constant series of over-aggressive deadlines and thus
+falling further and further behind.
 
 ## Hooking up a Lisp function to process the JSON
 
