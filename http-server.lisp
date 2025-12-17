@@ -49,10 +49,14 @@ For local testing and debugging in a SLIME listener
 (defun cassoc (item alist)
   (cdr (assoc item alist :test #'equalp)))
 
-(defun sequence-id-value (seq id &optional default)
-  (if-let ((obj (find-if (lambda (o) (equalp (cassoc "name" o) id)) seq)))
+(defun sequence-name-value (seq id &optional name-is-id default)
+  (if-let ((obj (find-if (lambda (o) (equalp (cassoc (if name-is-id "id" "name") o) id))
+                         seq)))
     (or (cassoc "value" obj) default)
     default))
+
+(defun yes-or-no (bool)
+  (if bool 'yes 'no))
 
 (define-constant +initial-world-state+ '(:state 100 :foe nil :friend t :delta 0) :test #'equal)
 
@@ -99,14 +103,14 @@ For local testing and debugging in a SLIME listener
 
 (defun extract-jag-status-data (json)
   (let ((a (aref (cassoc "actions" json) 0)))
-    (values (sequence-id-value (cassoc "outputs" a) "success")
+    (values (sequence-name-value (cassoc "outputs" a) "success")
             (gethash (cassoc "id" a) *action-id-map*))))
 
 (defun extract-commander-data (json)
   (iter (for (key id) :on '(:state "supply_level" :foe "red_at_objective"
                             :friend "friend_ship_available" :delta "supply_change")
              :by #'cddr)
-        (nconcing (list key (sequence-id-value json id (getf +initial-world-state+ key))))))
+        (nconcing (list key (sequence-name-value json id t (getf +initial-world-state+ key))))))
 
 (defun error-response (code msg &optional (request-id 'null))
   (setf (ht:return-code*) code)
@@ -149,7 +153,9 @@ For local testing and debugging in a SLIME listener
 
 (define-json-handler decision (json)
   (let* ((actions (extract-jag-request-data json))
-         (result (run-ibl `((state ,(wsget :state)) (foe ,(wsget :foe)))
+         (result (run-ibl `((state ,(wsget :state))
+                            (foe ,(yes-or-no (wsget :foe)))
+                            (friend ,(yes-or-no (wsget :friend))))
                           `((action ,actions))
                           `((status))
                           `((delta ,(wsget :delta))))))
@@ -161,9 +167,11 @@ For local testing and debugging in a SLIME listener
 
 (define-json-handler jag-status (json 204 nil)
   (multiple-value-bind (success action) (extract-jag-status-data json)
-    (learn-ibl `((state ,(wsget :state)) (foe ,(wsget :foe)))
+    (learn-ibl `((state ,(wsget :state))
+                 (foe ,(yes-or-no (wsget :foe)))
+                 (friend ,(yes-or-no (wsget :friend))))
                `((action (,action)))
-               `((status))
+               `((status ,(yes-or-no success)))
                `((delta ,(wsget :delta)))))
   nil)
 
